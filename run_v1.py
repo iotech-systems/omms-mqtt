@@ -11,6 +11,7 @@ mqttReaderV1: mqttMeterReaderV1 = mqttMeterReaderV1(XML_CONF_FILE)
 
 
 def main():
+   setproctitle.setproctitle("omms-mqtt")
    if not mqttReaderV1.load_conf():
       pass
    # -- hp --
@@ -25,5 +26,4 @@ def main():
 
 # -- start here --
 if __name__ == "__main__":
-   setproctitle.setproctitle("omms-mqtt")
    main()
