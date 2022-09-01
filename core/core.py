@@ -1,0 +1,3 @@
+
+LOOP_SLEEP_SECS: float = 16.0
+KWH_REPORT_INTERVAL: int = 300
