@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import time
+import setproctitle
 from core import core
 from mqtt.meter_reader import mqttMeterReaderV1
 
@@ -24,4 +25,5 @@ def main():
 
 # -- start here --
 if __name__ == "__main__":
-    main()
+   setproctitle.setproctitle("omms-mqtt")
+   main()
