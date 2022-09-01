@@ -5,8 +5,8 @@ import psycopg2
 DB_DB = "sbms"
 DB_PWD = "sbms_rest_api_pwd"
 DB_USR = "sbms_rest_api"
-DB_HOST = "localhost"
-DB_PORT = 9999
+DB_HOST = "10.0.0.122"
+DB_PORT = 5432
 
 
 # noinspection PyTypeChecker
