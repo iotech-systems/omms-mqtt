@@ -48,6 +48,17 @@ class dataOps(object):
       except Exception as e:
          print(e)
 
+   def elcrm_tag_dbid(self, m_dbid: int) -> str:
+      qry: str = f"select elcrm_entag from config.meters t where t.meter_dbid = {m_dbid};"
+      with self.conn.cursor() as cur:
+         cur.execute(qry)
+      # - - - - - - - - - - - - - - -
+      row = cur.fetchone()
+      if row is None:
+         return None
+      # -- got data --
+      return str(row[0])
+
    def save_kwhrs(self, dbid: int,  md: {}) -> bool:
       # - - - - - - - - - - - - - - -
       if not self.dbid_exists(dbid):
@@ -61,10 +72,26 @@ class dataOps(object):
       ins = f"insert into streams.kwhrs values({dbid}, cast('{dtsutc}' as timestamp)," \
          f" 0.28, {t_kwh}, {l1_t_kwh}, {l2_t_kwh}, {l3_t_kwh}, default);"
       print(ins)
-      done: bool = False
+      done0: bool = False
+      done1: bool = False
       with self.conn.cursor() as cur:
          cur.execute(ins)
-         done = cur.rowcount == 1
+         done0 = cur.rowcount == 1
          cur.connection.commit()
-      # -- hp --
-      return done
+      # -- hb --
+      try:
+         with self.conn.cursor() as cur:
+            cur.execute(f"delete from streams.__meter_heartbeats where fk_meter_dbid = {dbid};")
+            self.conn.commit()
+         qry: str = f"select t.elcrm_entag from config.meters t where t.meter_dbid = {dbid};"
+         tag: str = self.elcrm_tag_dbid(dbid)
+         # - - - - - - - -
+         payload = f"m_dbid: {dbid}; t_kWh: {t_kwh}; l1: {l1_t_kwh}; l2: {l2_t_kwh}; l3: {l3_t_kwh};"
+         ins = f"insert into streams.__meter_heartbeats values({dbid}, '{tag}', now(), '{payload}');"
+         with self.conn.cursor() as cur:
+            cur.execute(ins)
+            self.conn.commit()
+      except Exception as e:
+         print(e)
+      # -- return --
+      return done0
