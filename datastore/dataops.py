@@ -50,10 +50,12 @@ class dataOps(object):
 
    def elcrm_tag_dbid(self, m_dbid: int) -> str:
       qry: str = f"select elcrm_entag from config.meters t where t.meter_dbid = {m_dbid};"
+      row = None
       with self.conn.cursor() as cur:
          cur.execute(qry)
+         row = cur.fetchone()
+         cur.close()
       # - - - - - - - - - - - - - - -
-      row = cur.fetchone()
       if row is None:
          return None
       # -- got data --
@@ -83,14 +85,15 @@ class dataOps(object):
          with self.conn.cursor() as cur:
             cur.execute(f"delete from streams.__meter_heartbeats where fk_meter_dbid = {dbid};")
             self.conn.commit()
-         qry: str = f"select t.elcrm_entag from config.meters t where t.meter_dbid = {dbid};"
+            cur.close()
+         # -- get meter electric room tag --
          tag: str = self.elcrm_tag_dbid(dbid)
-         # - - - - - - - -
          payload = f"m_dbid: {dbid}; t_kWh: {t_kwh}; l1: {l1_t_kwh}; l2: {l2_t_kwh}; l3: {l3_t_kwh};"
          ins = f"insert into streams.__meter_heartbeats values({dbid}, '{tag}', now(), '{payload}');"
          with self.conn.cursor() as cur:
             cur.execute(ins)
             self.conn.commit()
+            cur.close()
       except Exception as e:
          print(e)
       # -- return --
