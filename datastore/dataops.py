@@ -2,6 +2,7 @@
 import redis
 import datetime
 import psycopg2
+from core.utils import utils
 
 DB_DB = "sbms"
 DB_PWD = "sbms_rest_api_pwd"
@@ -112,8 +113,9 @@ class dataOps(object):
 
    def publish_to_redis(self, tag: str, m_dbid: int, t_kwh, l1_kwh, l2_kwh, l3_kwh):
       try:
-         msg = f"#MSG_TYPE:ELC_READ#[loc_tag: {tag}; m_dbid: {m_dbid}; t_kWh: {t_kwh}; " \
-            f"l1_kwh: {l1_kwh}; l2_kwh: {l2_kwh}; l3: {l3_kwh}]#"
+         d = utils.dts_utc()
+         msg = f"#MSG_TYPE:KWHRS_READ#[loc_tag: {tag}; m_dbid: {m_dbid}; dts_utc: {d}" \
+            f" t_kWh: {t_kwh}; l1_kwh: {l1_kwh}; l2_kwh: {l2_kwh}; l3: {l3_kwh}]#"
          self.redb.publish(RED_READS_CHANNEL, msg)
       except Exception as e:
          print(e)
