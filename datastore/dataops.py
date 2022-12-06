@@ -112,7 +112,7 @@ class dataOps(object):
 
    def publish_to_redis(self, tag: str, m_dbid: int, t_kwh, l1_kwh, l2_kwh, l3_kwh):
       try:
-         msg = f"#MSG_TYPE:ELC#[elcrm_tag: {tag}; m_dbid: {m_dbid}; t_kWh: {t_kwh}; " \
+         msg = f"#MSG_TYPE:ELC_READ#[loc_tag: {tag}; m_dbid: {m_dbid}; t_kWh: {t_kwh}; " \
             f"l1_kwh: {l1_kwh}; l2_kwh: {l2_kwh}; l3: {l3_kwh}]#"
          self.redb.publish(RED_READS_CHANNEL, msg)
       except Exception as e:
