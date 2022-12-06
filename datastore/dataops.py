@@ -1,4 +1,5 @@
 
+import redis
 import datetime
 import psycopg2
 
@@ -8,12 +9,20 @@ DB_USR = "sbms_rest_api"
 DB_HOST = "10.0.0.122"
 DB_PORT = 5432
 
+RED_HOST = "10.0.0.122"
+RED_PWD = "Q@@bcd!234##!"
+RED_PORT = 6379
+RED_DB = 0
+RED_READS_CHANNEL = "OMMS_ELECTRIC_READS"
+
 
 # noinspection PyTypeChecker
 class dataOps(object):
 
    def __init__(self):
       self.conn: psycopg2.connection = None
+      pool = redis.ConnectionPool(host=RED_HOST, port=RED_PORT, db=RED_DB, password=RED_PWD)
+      self.redb = redis.Redis(connection_pool=pool)
 
    def connect(self) -> bool:
       self.conn = psycopg2.connect(host=DB_HOST, port=DB_PORT, database=DB_DB, user=DB_USR, password=DB_PWD)
@@ -94,7 +103,17 @@ class dataOps(object):
             cur.execute(ins)
             self.conn.commit()
             cur.close()
+         # -- push to redis --
+         self.publish_to_redis(tag, dbid, t_kwh, l1_t_kwh, l2_t_kwh, l3_t_kwh)
       except Exception as e:
          print(e)
       # -- return --
       return done0
+
+   def publish_to_redis(self, tag: str, m_dbid: int, t_kwh, l1_kwh, l2_kwh, l3_kwh):
+      try:
+         msg = f"#MSG_TYPE:ELC#[elcrm_tag: {tag}; m_dbid: {m_dbid}; t_kWh: {t_kwh}; " \
+            f"l1_kwh: {l1_kwh}; l2_kwh: {l2_kwh}; l3: {l3_kwh}]#"
+         self.redb.publish(RED_READS_CHANNEL, msg)
+      except Exception as e:
+         print(e)
